@@ -4,7 +4,9 @@ pipeline {
     stages {
         stage('Backend test') {
             steps {
-                bat '.\\mvnw.cmd clean test'
+                dir('practiseB') {
+                    bat '.\\mvnw.cmd clean test'
+                }
             }
         }
     }
