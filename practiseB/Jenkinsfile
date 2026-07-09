@@ -1,0 +1,11 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Backend test') {
+            steps {
+                bat '.\\mvnw.cmd clean test'
+            }
+        }
+    }
+}

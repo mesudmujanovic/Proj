@@ -1,0 +1,8 @@
+ <div>
+      <input [(ngModel)]="user.name" placeholder="Ime" />
+      <input [(ngModel)]="user.lastName" placeholder="Prezime" />
+      <button (click)="saveUser()">Sačuvaj</button>
+    </div>
+    <div *ngIf="savedUser">
+      Sačuvan korisnik: {{ savedUser.name }} {{ savedUser.lastName }} (ID: {{ savedUser.id }})
+    </div>

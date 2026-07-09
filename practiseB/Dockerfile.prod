@@ -1,0 +1,61 @@
+```text
+Dockerfile.prod ima dva FROM zato što koristi multi-stage build.
+
+Prvi FROM:
+
+FROM eclipse-temurin:21-jdk-alpine AS build
+
+Ovo je build faza.
+
+U ovoj fazi Docker ima JDK, Maven wrapper i source code.
+Ova faza služi da se Java aplikacija kompajlira i da se napravi JAR.
+
+AS build znači da ovoj fazi dajemo ime build.
+
+To ime koristimo kasnije ovde:
+
+COPY --from=build /app/target/*.jar app.jar
+
+Ova linija znači:
+uzmi gotov JAR iz prve faze koja se zove build i kopiraj ga u finalni image kao app.jar.
+
+
+Drugi FROM:
+
+FROM eclipse-temurin:21-jre-alpine
+
+Ovo je finalna production faza.
+
+U ovoj fazi ne kompajliramo kod.
+Ovde samo pokrećemo već napravljen JAR.
+
+Zato koristimo JRE, a ne JDK.
+
+JDK treba za build, kompajliranje i pravljenje JAR-a.
+JRE je dovoljan samo za pokretanje gotovog JAR-a.
+
+
+Najkraće:
+
+Prvi FROM = radionica gde se pravi JAR.
+Drugi FROM = finalni production image gde se samo pokreće JAR.
+
+Bez prvog FROM:
+Docker ne bi sam napravio JAR.
+
+Bez drugog FROM:
+finalni image bi nosio nepotrebne stvari kao JDK, Maven, source code i build fajlove.
+
+Poenta multi-stage build-a:
+production image treba da bude manji i čistiji.
+
+Production image treba da sadrži samo:
+- Java runtime
+- app.jar
+
+Production image ne treba da sadrži:
+- source code
+- Maven
+- JDK compiler
+- build cache
+```
