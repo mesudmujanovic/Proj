@@ -1,0 +1,5 @@
+# IntelliJ IDEA files for the whole repository
+.idea/
+*.iml
+*.iws
+*.ipr
