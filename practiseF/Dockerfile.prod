@@ -1,124 +1,124 @@
-```text
-I ovaj Dockerfile.prod za frontend ima dva FROM zato što je multi-stage build.
+#```text
+#I ovaj Dockerfile.prod za frontend ima dva FROM zato što je multi-stage build.
 
-Prvi FROM:
+#Prvi FROM:
 
 FROM node:18-alpine AS build
 
-Ovo je build faza.
+#Ovo je build faza.
 
-U ovoj fazi Docker ima Node.js.
-Node.js nam treba da instaliramo Angular dependencies i da pokrenemo Angular build.
+#U ovoj fazi Docker ima Node.js.
+#Node.js nam treba da instaliramo Angular dependencies i da pokrenemo Angular build.
 
-AS build znači da ovoj fazi dajemo ime build.
+#AS build znači da ovoj fazi dajemo ime build.
 
-To ime koristimo kasnije ovde:
+#To ime koristimo kasnije ovde:
 
 COPY --from=build /app/dist /usr/share/nginx/html
 
-Ova linija znači:
-uzmi gotove Angular build fajlove iz prve faze koja se zove build i kopiraj ih u finalni Nginx image.
+#Ova linija znači:
+#uzmi gotove Angular build fajlove iz prve faze koja se zove build i kopiraj ih u finalni Nginx image.
 
 
-Drugi FROM:
+#Drugi FROM:
 
 FROM nginx:alpine
 
-Ovo je finalna production faza.
+#Ovo je finalna production faza.
 
-U ovoj fazi više nema Node.js-a.
-Ovde se ne pokreće ng serve.
-Ovde Nginx samo servira gotove static fajlove.
+#U ovoj fazi više nema Node.js-a.
+#Ovde se ne pokreće ng serve.
+#Ovde Nginx samo servira gotove static fajlove.
 
-Angular production nije aplikacija koja stalno radi preko Node-a.
-Angular se u produkciji builda u obične static fajlove:
-- HTML
-- CSS
-- JavaScript
-- slike/assets
+#Angular production nije aplikacija koja stalno radi preko Node-a.
+#Angular se u produkciji builda u obične static fajlove:
+#- HTML
+#- CSS
+#- JavaScript
+#- slike/assets
 
-Nginx te fajlove šalje browseru.
-
-
-Najkraće:
-
-Prvi FROM = radionica gde Node builda Angular aplikaciju.
-Drugi FROM = finalni production image gde Nginx servira gotove fajlove.
-
-Bez prvog FROM:
-Docker ne bi mogao da uradi npm ci i npm run build.
-
-Bez drugog FROM:
-finalni image bi nosio nepotrebne stvari kao Node.js, node_modules, source code i build cache.
-
-Poenta multi-stage build-a:
-production frontend image treba da bude manji i čistiji.
-
-Production frontend image treba da sadrži samo:
-- Nginx
-- gotove Angular static fajlove
-
-Production frontend image ne treba da sadrži:
-- Angular source code
-- Node.js
-- node_modules
-- build cache
+#Nginx te fajlove šalje browseru.
 
 
-Objašnjenje linija:
+#Najkraće:
+
+#Prvi FROM = radionica gde Node builda Angular aplikaciju.
+#Drugi FROM = finalni production image gde Nginx servira gotove fajlove.
+
+#Bez prvog FROM:
+#Docker ne bi mogao da uradi npm ci i npm run build.
+
+#Bez drugog FROM:
+#finalni image bi nosio nepotrebne stvari kao Node.js, node_modules, source code i build cache.
+
+#Poenta multi-stage build-a:
+#production frontend image treba da bude manji i čistiji.
+
+#Production frontend image treba da sadrži samo:
+#- Nginx
+#- gotove Angular static fajlove
+
+#Production frontend image ne treba da sadrži:
+#- Angular source code
+#- Node.js
+#- node_modules
+#- build cache
+
+
+#Objašnjenje linija:
 
 # PROD frontend Dockerfile
-Ovo je komentar. Ne izvršava se.
-Samo kaže da je ovo production Dockerfile za frontend.
+#Ovo je komentar. Ne izvršava se.
+#Samo kaže da je ovo production Dockerfile za frontend.
 
 # Multi-stage build: Node builda Angular, Nginx servira static files
-Ovo je komentar.
-Znači: prvo Node builda Angular, posle Nginx servira rezultat builda.
+#Ovo je komentar.
+#Znači: prvo Node builda Angular, posle Nginx servira rezultat builda.
 
 FROM node:18-alpine AS build
-Kreće prva faza.
-Koristi Node.js 18 na Alpine Linuxu.
-Node treba za npm ci i npm run build.
-AS build daje ime ovoj fazi.
+#Kreće prva faza.
+#Koristi Node.js 18 na Alpine Linuxu.
+#Node treba za npm ci i npm run build.
+#AS build daje ime ovoj fazi.
 
 WORKDIR /app
-Postavlja radni folder unutar build faze na /app.
-Sve naredne komande rade iz /app foldera.
+#Postavlja radni folder unutar build faze na /app.
+#Sve naredne komande rade iz /app foldera.
 
 COPY package*.json ./
-Kopira package.json i package-lock.json u /app.
-Ovo se radi pre kopiranja celog koda zbog Docker cache-a.
-Ako se dependencies nisu promenile, Docker ne mora ponovo da radi npm ci.
+#Kopira package.json i package-lock.json u /app.
+#Ovo se radi pre kopiranja celog koda zbog Docker cache-a.
+#Ako se dependencies nisu promenile, Docker ne mora ponovo da radi npm ci.
 
 RUN npm ci
-Instalira dependencies iz package-lock.json.
-npm ci je bolji za build/CI/production jer koristi tačno verzije iz lock fajla.
+#Instalira dependencies iz package-lock.json.
+#npm ci je bolji za build/CI/production jer koristi tačno verzije iz lock fajla.
 
 COPY . .
-Kopira ceo frontend kod u /app.
-Tu ulaze src, angular.json, tsconfig, public/assets itd.
+#Kopira ceo frontend kod u /app.
+#Tu ulaze src, angular.json, tsconfig, public/assets itd.
 
 RUN npm run build
-Pokreće Angular production build.
-Rezultat se pravi u dist folderu.
+#Pokreće Angular production build.
+#Rezultat se pravi u dist folderu.
 
 FROM nginx:alpine
-Kreće druga, finalna production faza.
-Koristi Nginx image.
-Ovaj image služi da servira static fajlove browseru.
+#Kreće druga, finalna production faza.
+#Koristi Nginx image.
+#Ovaj image služi da servira static fajlove browseru.
 
 COPY --from=build /app/dist /usr/share/nginx/html
-Kopira build rezultat iz prve faze u Nginx folder.
-Nginx po defaultu servira fajlove iz /usr/share/nginx/html.
-Zato tamo stavljamo Angular build.
+#Kopira build rezultat iz prve faze u Nginx folder.
+#Nginx po defaultu servira fajlove iz /usr/share/nginx/html.
+#Zato tamo stavljamo Angular build.
 
 EXPOSE 80
-Dokumentuje da Nginx unutar containera sluša na portu 80.
-Ovo samo kaže koji port koristi container.
-Pravo mapiranje porta radi docker-compose, npr. 80:80.
+#Dokumentuje da Nginx unutar containera sluša na portu 80.
+#Ovo samo kaže koji port koristi container.
+#Pravo mapiranje porta radi docker-compose, npr. 80:80.
 
 CMD ["nginx", "-g", "daemon off;"]
-Pokreće Nginx kada container startuje.
-daemon off znači da Nginx ostaje u foreground-u.
-To je potrebno da container ostane upaljen.
-```
+#Pokreće Nginx kada container startuje.
+#daemon off znači da Nginx ostaje u foreground-u.
+#To je potrebno da container ostane upaljen.
+#```
