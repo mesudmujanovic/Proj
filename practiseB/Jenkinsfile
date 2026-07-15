@@ -32,5 +32,20 @@ pipeline {
                 }
             }
         }
+
+        stage('Build Docker image') {
+            steps {
+                dir('practiseB') {
+                    bat 'docker build -t practiseb-backend:%BUILD_NUMBER% .'
+                    bat 'docker tag practiseb-backend:%BUILD_NUMBER% practiseb-backend:latest'
+                }
+            }
+        }
+
+        stage('Show Docker image') {
+            steps {
+                bat 'docker images practiseb-backend'
+            }
+        }
     }
 }
