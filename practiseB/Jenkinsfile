@@ -33,39 +33,4 @@ pipeline {
             }
         }
     }
-}pipeline {
-     agent any
-
-     stages {
-         stage('Check Java') {
-             steps {
-                 bat 'echo JAVA_HOME=%JAVA_HOME%'
-                 bat '"%JAVA_HOME%\\bin\\java.exe" -version'
-             }
-         }
-
-         stage('Backend test') {
-             steps {
-                 dir('practiseB') {
-                     bat '.\\mvnw.cmd clean test'
-                 }
-             }
-         }
-
-         stage('Build backend JAR') {
-             steps {
-                 dir('practiseB') {
-                     bat '.\\mvnw.cmd package -DskipTests'
-                 }
-             }
-         }
-
-         stage('Show generated JAR') {
-             steps {
-                 dir('practiseB') {
-                     bat 'dir target\\*.jar'
-                 }
-             }
-         }
-     }
- }
+}
